@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.2.0 — 2026-09-24
+
+A consumer that stores conversations can now replay them.
+
+- `ModelStep::from_wire` is public, and `ModelStep` implements `Deserialize`:
+  a step stored as the JSON it arrived as decodes back to the same step. A
+  `user_input` or `function_result` object is refused as a model step.
+- `Conversation::push_model_steps` appends decoded steps under the same rule
+  as `push_turn`.
+- `StreamEvent::from_value` decodes a frame an SSE parser already read as JSON.
+
+### Breaking: `ConversationError::NotAwaitingModel` is gone
+
+A model turn may now follow a model turn; only an unanswered function call
+blocks one. The API documents no rule against it, and `Request::new` still
+refuses to ask the model when the history ends with its own step.
+
+**Migration.** Remove any match arm for `ConversationError::NotAwaitingModel`.
+
 ## 0.1.0 — 2026-09-24
 
 First release: typed, stateless bindings for `POST /v1beta/interactions`.

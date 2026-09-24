@@ -10,12 +10,13 @@
 //!   Dropping a thought step is answered with a 400 (measured 2026-09-24), and
 //!   its signature is opaque, so the crate cannot rebuild one. A [`ModelStep`]
 //!   therefore keeps the JSON object it arrived as and serializes *that*; its
-//!   typed [`StepView`] is for reading only. There is no public constructor: a
-//!   model step comes from [`crate::settle`] or [`crate::response`], or not at
-//!   all.
+//!   typed [`StepView`] is for reading only. A model step is only ever
+//!   *decoded* — by [`crate::settle`], by [`crate::response`], or by
+//!   [`ModelStep::from_wire`] from a copy the caller stored — and it has no
+//!   setter, so what was received is what is sent.
 //!
 //! ```compile_fail
-//! // A model step cannot be written by hand, so it cannot be forged or edited.
+//! // Its fields are private: a decoded step cannot be edited in place.
 //! let _ = google::step::ModelStep { wire: Default::default(), view: todo!() };
 //! ```
 
@@ -182,9 +183,13 @@ impl std::fmt::Display for StepError {
 impl std::error::Error for StepError {}
 
 impl ModelStep {
-    /// Decode one step object. Unknown step types are server steps: the
-    /// `Unrecognized` [`ServerStepType`] keeps them replayable.
-    pub(crate) fn from_wire(wire: Map<String, Value>) -> Result<Self, StepError> {
+    /// Decode one step object, as the API sent it or as the caller stored it.
+    ///
+    /// Unknown step types are server steps: the `Unrecognized`
+    /// [`ServerStepType`] keeps them replayable. A caller-authored type
+    /// (`user_input`, `function_result`) is refused, because replaying it as the
+    /// model's would put words in the model's mouth.
+    pub fn from_wire(wire: Map<String, Value>) -> Result<Self, StepError> {
         let bad = |e: serde_json::Error| StepError(e.to_string());
         let step_type = wire.get("type").and_then(Value::as_str).ok_or_else(|| StepError("no `type`".into()))?;
         let blocks = |key: &str| -> Result<Vec<OutputContent>, StepError> {
@@ -215,6 +220,9 @@ impl ModelStep {
                 StepView::FunctionCall(FunctionCall { id: w.id, name: w.name, arguments: w.arguments })
             }
             "model_output" => StepView::ModelOutput { content: blocks("content")? },
+            "user_input" | "function_result" => {
+                return Err(StepError(format!("`{step_type}` is the caller's step, not the model's")));
+            }
             other => StepView::Server {
                 step_type: KnownServerStepType::from_wire(other)
                     .map(ServerStepType::Known)
@@ -240,6 +248,12 @@ impl ModelStep {
             StepView::FunctionCall(call) => Some(call),
             _ => None,
         }
+    }
+}
+
+impl<'de> Deserialize<'de> for ModelStep {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        ModelStep::from_wire(Map::deserialize(d)?).map_err(serde::de::Error::custom)
     }
 }
 

@@ -154,7 +154,11 @@ impl StreamEvent {
         if payload.trim() == DONE {
             return Ok(StreamEvent::Done);
         }
-        let value: Value = serde_json::from_str(payload).map_err(|e| FrameError::NotJson(e.to_string()))?;
+        Self::from_value(serde_json::from_str(payload).map_err(|e| FrameError::NotJson(e.to_string()))?)
+    }
+
+    /// Decode one frame an SSE parser has already read as JSON.
+    pub fn from_value(value: Value) -> Result<Self, FrameError> {
         let Value::Object(mut map) = value else { return Err(FrameError::NotObject) };
         let event_type = map.get("event_type").and_then(Value::as_str).ok_or(FrameError::NoEventType)?.to_owned();
         let et = event_type.as_str();

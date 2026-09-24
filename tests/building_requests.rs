@@ -122,8 +122,7 @@ fn a_model_turn_needs_a_caller_step_before_it() {
         r#"{"index":0,"event_type":"step.stop"}"#,
         r#"{"interaction":{"id":"","status":"completed"},"event_type":"interaction.completed"}"#,
     ]);
-    conversation.push_turn(answer.clone()).unwrap();
-    assert_eq!(conversation.push_turn(answer).unwrap_err(), ConversationError::NotAwaitingModel);
+    conversation.push_turn(answer).unwrap();
     assert!(Request::new(&conversation, Gemini3_8Flash::new()).is_err());
     conversation.push_user_text("again").unwrap();
     assert!(Request::new(&conversation, Gemini3_8Flash::new()).is_ok());
@@ -230,4 +229,18 @@ fn usage_joins_pointwise() {
     joined.join(&b);
     assert_eq!((joined.total_input_tokens, joined.total_output_tokens, joined.total_cached_tokens), (10, 5, 3));
     assert_eq!(joined.total_tokens, 0);
+}
+
+#[test]
+fn a_stored_model_step_decodes_back_to_the_same_bytes() {
+    let turn = one_call("call_9");
+    let stored = serde_json::to_string(&turn.steps[0]).unwrap();
+    let restored: google::step::ModelStep = serde_json::from_str(&stored).unwrap();
+    assert_eq!(restored, turn.steps[0]);
+    assert!(serde_json::from_str::<google::step::ModelStep>(r#"{"type":"user_input","content":[]}"#).is_err());
+
+    let mut conversation = Conversation::new(None, vec![function("f")]).unwrap();
+    conversation.push_user_text("hi").unwrap();
+    conversation.push_model_steps(vec![restored]).unwrap();
+    assert_eq!(conversation.pending_calls()[0].id, "call_9");
 }

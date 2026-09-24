@@ -13,7 +13,7 @@
 use std::collections::BTreeSet;
 
 use crate::content::{FunctionOutput, InputContent};
-use crate::step::{FunctionCall, FunctionResult, Step, UserInput};
+use crate::step::{FunctionCall, FunctionResult, ModelStep, Step, UserInput};
 use crate::tools::{AllowedTools, Tool};
 use crate::turn::Turn;
 use crate::values::ToolChoiceMode;
@@ -27,9 +27,6 @@ pub enum ConversationError {
     UnansweredCalls(Vec<String>),
     /// No pending call has this id.
     UnknownCall(String),
-    /// The history already ends with the model's turn, so another model turn
-    /// cannot follow it.
-    NotAwaitingModel,
     /// No declared tool has this name.
     UnknownTool(String),
 }
@@ -40,7 +37,6 @@ impl std::fmt::Display for ConversationError {
             ConversationError::DuplicateToolName(name) => write!(f, "tool `{name}` is declared twice"),
             ConversationError::UnansweredCalls(ids) => write!(f, "function calls without a result: {}", ids.join(", ")),
             ConversationError::UnknownCall(id) => write!(f, "no pending function call has id `{id}`"),
-            ConversationError::NotAwaitingModel => f.write_str("the history already ends with a model turn"),
             ConversationError::UnknownTool(name) => write!(f, "no declared tool is named `{name}`"),
         }
     }
@@ -120,11 +116,16 @@ impl Conversation {
     ///
     /// Its function calls become pending until each has a result.
     pub fn push_turn(&mut self, turn: Turn) -> Result<(), ConversationError> {
-        if !self.awaits_model() {
-            self.refuse_pending()?;
-            return Err(ConversationError::NotAwaitingModel);
-        }
-        for step in turn.steps {
+        self.push_model_steps(turn.steps)
+    }
+
+    /// Append model steps decoded from a stored copy of earlier turns.
+    ///
+    /// The same rule as [`Self::push_turn`]: nothing the model says may come
+    /// between one of its calls and that call's result.
+    pub fn push_model_steps(&mut self, steps: Vec<ModelStep>) -> Result<(), ConversationError> {
+        self.refuse_pending()?;
+        for step in steps {
             if let Some(call) = step.as_function_call() {
                 self.pending.push(call.clone());
             }
