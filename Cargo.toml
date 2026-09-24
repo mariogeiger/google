@@ -1,0 +1,17 @@
+[package]
+name = "google"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/mariogeiger/google"
+description = "Strictly typed, cache-safe Rust bindings for the Gemini Interactions API"
+
+[dependencies]
+base64 = "0.22"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[dev-dependencies]
+# Live-API integration tests only. The crate itself stays bindings-only: this
+# HTTP client never leaks into the library.
+ureq = "2"

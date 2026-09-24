@@ -1,0 +1,30 @@
+event: interaction.created
+data: {"interaction":{"id":"","status":"in_progress","object":"interaction","model":"gemini-3.7-flash"},"event_type":"interaction.created"}
+
+event: interaction.status_update
+data: {"interaction_id":"","status":"in_progress","event_type":"interaction.status_update"}
+
+event: step.start
+data: {"index":0,"step":{"type":"thought"},"event_type":"step.start"}
+
+event: step.delta
+data: {"index":0,"delta":{"signature":"EsgBCsUBAWkUfRMZekf+LWwdeu3abi3R35ayXvRMoHBLVes6nPx8pvMm9sj9EQgw+wR1yIHrd8eOdfbkaLvE+JsEO05Lw4fKYZ0ECj6MHw2r+vU0gXmXHsDDyrvqe/YfVjNBuWPI3KxOHCfOkkaeEdtqReVHYbur29inW5OjqFvKr6G1g2C3bEHbWXg1QOysGMwKykHGlinEC4xyZZAy4Fjf3AHWrIyItarVQtACTVtZlDJS9d/V4rD9AhRRUR/+VtHp0twv9FfxX1c=","type":"thought_signature"},"event_type":"step.delta"}
+
+event: step.stop
+data: {"index":0,"event_type":"step.stop"}
+
+event: step.start
+data: {"index":1,"step":{"type":"model_output"},"event_type":"step.start"}
+
+event: step.delta
+data: {"index":1,"delta":{"text":"Hello! How can I help you today?","type":"text"},"event_type":"step.delta"}
+
+event: step.stop
+data: {"index":1,"event_type":"step.stop"}
+
+event: interaction.completed
+data: {"interaction":{"id":"","status":"completed","usage":{"total_tokens":10212,"total_input_tokens":10185,"input_tokens_by_modality":[{"modality":"text","tokens":10185}],"total_cached_tokens":4081,"cached_tokens_by_modality":[{"modality":"text","tokens":4081}],"total_output_tokens":9,"total_tool_use_tokens":0,"total_thought_tokens":18,"raw_prompt_token":10220,"model_invocation_token_counts":[{"prompt_tokens_details":[{"modality":"text","tokens":10220}],"cache_tokens_details":[{"modality":"text","tokens":4096}],"candidates_tokens_details":[{"modality":"text","tokens":13}],"thoughts_tokens_details":[{"modality":"text","tokens":18}]}],"non_grounding_model_invocation_token_counts":[{"prompt_tokens_details":[{"modality":"text","tokens":10220}],"cache_tokens_details":[{"modality":"text","tokens":4096}],"candidates_tokens_details":[{"modality":"text","tokens":13}],"thoughts_tokens_details":[{"modality":"text","tokens":18}]}]},"created":"2026-09-24T10:46:52Z","updated":"2026-09-24T10:46:52Z","service_tier":"standard","object":"interaction","model":"gemini-3.7-flash"},"event_type":"interaction.completed"}
+
+event: done
+data: [DONE]
+

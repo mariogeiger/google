@@ -1,0 +1,56 @@
+{
+  "model": "gemini-3.8-flash",
+  "store": false,
+  "tools": [
+    {
+      "type": "function",
+      "name": "read_file",
+      "description": "Read a UTF-8 file and return its contents.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "File path."
+          }
+        },
+        "required": [
+          "path"
+        ]
+      }
+    },
+    {
+      "type": "function",
+      "name": "word_count",
+      "description": "Count the words in a text.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ]
+      }
+    }
+  ],
+  "system_instruction": "You are a careful assistant.",
+  "generation_config": {
+    "thinking_level": "high",
+    "thinking_summaries": "auto"
+  },
+  "input": [
+    {
+      "type": "user_input",
+      "content": [
+        {
+          "type": "text",
+          "text": "Read notes.txt and todo.txt (in parallel), then tell me which is longer. Use the tools."
+        }
+      ]
+    }
+  ],
+  "stream": true
+}

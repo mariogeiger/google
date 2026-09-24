@@ -1,0 +1,21 @@
+{
+  "model": "gemini-3.8-flash",
+  "store": false,
+  "stream": true,
+  "system_instruction": "Answer in one short sentence.",
+  "input": [
+    {
+      "type": "user_input",
+      "content": [
+        {
+          "type": "text",
+          "text": "What is 17 * 23? Think it through."
+        }
+      ]
+    }
+  ],
+  "generation_config": {
+    "thinking_level": "low",
+    "thinking_summaries": "auto"
+  }
+}

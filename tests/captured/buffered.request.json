@@ -1,0 +1,19 @@
+{
+  "model": "gemini-3.8-flash",
+  "store": false,
+  "input": [
+    {
+      "type": "user_input",
+      "content": [
+        {
+          "type": "text",
+          "text": "Name one prime number above 100."
+        }
+      ]
+    }
+  ],
+  "generation_config": {
+    "thinking_level": "low",
+    "max_output_tokens": 2000
+  }
+}

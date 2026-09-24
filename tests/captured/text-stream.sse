@@ -1,0 +1,30 @@
+event: interaction.created
+data: {"interaction":{"id":"","status":"in_progress","object":"interaction","model":"gemini-3.8-flash"},"event_type":"interaction.created"}
+
+event: interaction.status_update
+data: {"interaction_id":"","status":"in_progress","event_type":"interaction.status_update"}
+
+event: step.start
+data: {"index":0,"step":{"type":"thought"},"event_type":"step.start"}
+
+event: step.delta
+data: {"index":0,"delta":{"signature":"EvEDCu4DAWkUfRPe5Fxw5gjVw1Aqeps7cekkdNot8pESWyb7I3GL1BTFQ0LX8ZryxosZZU1wC5DAxUgRG+KIX0hItxAdYMOhN51PamAZe5mYBKygpqZdL+LpcIjtLzzsL7zrHMRONy2s5GNXCF13I7C/aNrucdYH2eYWL1Y69UURrvGge10hDJQW3rIhGqo0gGhfr2dVi9wKvpUHzLqmtcNVwDKNNVgLA83knciAazKtJiyptdANjgDY9iC0OvmoRj8hMCgmKPNmVEWFrvhSDr4j7/cOmXB6e9XonUDqAsnZAGtcHHDMKPnFIF20nEtQ2Nu819rLr64o8+t0pW9HY1MpRtJxzzWBQoy1raDWYCimxKoIMK8gF15bMXfO/Jqiw7do6wmO00Yj0dS+PWN4GxjPnsLDiMXckRTfF1HsjvclSJm33abmklhCktUywGa2luORdbNfrjMLo/0dYware9gb0hJuXXp0dLg+eZH6kl/fsyN14mjpDd0FeRLP1I02BUOZU70F4WHM+relluXd7osd0IgoNR8xOHWHofcyj36TQ+VPxBXo8Eh4/avI7twqO1sCHbkSPmDyWM8F2DulsXNThcniRX1wWkCfPodK96jElDTTnnN9hJcOTe4N+2r5BpRJTVy8cfKzYz1LOUSLyAj7QnU=","type":"thought_signature"},"event_type":"step.delta"}
+
+event: step.stop
+data: {"index":0,"event_type":"step.stop"}
+
+event: step.start
+data: {"index":1,"step":{"type":"model_output"},"event_type":"step.start"}
+
+event: step.delta
+data: {"index":1,"delta":{"text":"17 multiplied by 23 is 391.","type":"text"},"event_type":"step.delta"}
+
+event: step.stop
+data: {"index":1,"event_type":"step.stop"}
+
+event: interaction.completed
+data: {"interaction":{"id":"","status":"completed","usage":{"total_tokens":174,"total_input_tokens":22,"input_tokens_by_modality":[{"modality":"text","tokens":22}],"total_cached_tokens":0,"total_output_tokens":13,"total_tool_use_tokens":0,"total_thought_tokens":139,"raw_prompt_token":57,"model_invocation_token_counts":[{"prompt_tokens_details":[{"modality":"text","tokens":57}],"candidates_tokens_details":[{"modality":"text","tokens":17}],"thoughts_tokens_details":[{"modality":"text","tokens":139}]}],"non_grounding_model_invocation_token_counts":[{"prompt_tokens_details":[{"modality":"text","tokens":57}],"candidates_tokens_details":[{"modality":"text","tokens":17}],"thoughts_tokens_details":[{"modality":"text","tokens":139}]}]},"created":"2026-09-24T10:36:26Z","updated":"2026-09-24T10:36:26Z","service_tier":"standard","object":"interaction","model":"gemini-3.8-flash"},"event_type":"interaction.completed"}
+
+event: done
+data: [DONE]
+

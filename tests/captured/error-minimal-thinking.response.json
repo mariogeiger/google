@@ -1,0 +1,1 @@
+{"error":{"message":"'minimal' is not a supported thinking level for this model. Allowed values are: medium, low, high.","code":"invalid_request"}}
