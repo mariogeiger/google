@@ -83,3 +83,6 @@ same commit as the change.
 - Work on `main`. A multi-file change goes through a worktree on a branch,
   fast-forwarded onto `main` when its checks pass.
 - The repository is public. Push only with the owner's authority.
+- Name no gateway: not its operator, its host, the platform behind it, or the
+  model identifiers it routes. Write "a gateway" and `gateway/<model>`, in code,
+  fixtures, documentation, and commit messages alike.
