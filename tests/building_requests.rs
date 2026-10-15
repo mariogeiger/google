@@ -9,7 +9,9 @@ use google::stream::{Delta, StreamEvent};
 use google::tools::{Function, LatLng, Tool, ToolChoice};
 use google::turn::Turn;
 use google::usage::Usage;
-use google::{ImageMime, MediaResolution, SearchType, ServiceTier, ThinkingSummaries, ToolChoiceMode};
+use google::{
+    AllowedToolsMode, ImageMime, MediaResolution, SearchType, ServiceTier, ThinkingSummaries, ToolChoiceMode,
+};
 use serde_json::json;
 
 fn function(name: &str) -> Tool {
@@ -60,7 +62,7 @@ fn per_call_parameters_land_where_the_api_reads_them() {
         .with_max_output_tokens(1_000)
         .unwrap()
         .with_response_format(TextFormat::Json(json!({"type": "object"}).as_object().unwrap().clone()));
-    let allowed = conversation.allow_tools(ToolChoiceMode::Any, &["g"]).unwrap();
+    let allowed = conversation.allow_tools(AllowedToolsMode::Any, &["g"]).unwrap();
     let mut request = Request::new(&conversation, model).unwrap().with_tool_choice(ToolChoice::Allowed(allowed));
     request.seed = Some(7);
     request.stop_sequences = vec!["END".into()];
@@ -135,7 +137,7 @@ fn tool_names_are_unique_and_choices_name_declared_tools() {
     );
     let conversation = Conversation::new(None, vec![function("f"), Tool::CodeExecution]).unwrap();
     assert_eq!(
-        conversation.allow_tools(ToolChoiceMode::Auto, &["nope"]).unwrap_err(),
+        conversation.allow_tools(AllowedToolsMode::Validated, &["nope"]).unwrap_err(),
         ConversationError::UnknownTool("nope".into())
     );
     assert_eq!(serde_json::to_value(ToolChoice::Mode(ToolChoiceMode::Validated)).unwrap(), json!("validated"));

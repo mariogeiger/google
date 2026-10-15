@@ -16,7 +16,7 @@ use crate::content::{FunctionOutput, InputContent};
 use crate::step::{FunctionCall, FunctionResult, ModelStep, Step, UserInput};
 use crate::tools::{AllowedTools, Tool};
 use crate::turn::Turn;
-use crate::values::ToolChoiceMode;
+use crate::values::AllowedToolsMode;
 
 /// A refused change to a conversation, returned before anything is appended.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -152,7 +152,7 @@ impl Conversation {
     }
 
     /// A restriction to named tools of this conversation, checked by name.
-    pub fn allow_tools(&self, mode: ToolChoiceMode, names: &[&str]) -> Result<AllowedTools, ConversationError> {
+    pub fn allow_tools(&self, mode: AllowedToolsMode, names: &[&str]) -> Result<AllowedTools, ConversationError> {
         for name in names {
             if !self.tools.iter().any(|t| t.name() == Some(name)) {
                 return Err(ConversationError::UnknownTool((*name).to_owned()));

@@ -10,7 +10,7 @@ use serde::ser::SerializeMap;
 use serde::{Serialize, Serializer};
 use serde_json::{Map, Value};
 
-use crate::values::{ComputerEnvironment, ComputerSafetyPolicy, SearchType, ToolChoiceMode};
+use crate::values::{AllowedToolsMode, ComputerEnvironment, ComputerSafetyPolicy, SearchType, ToolChoiceMode};
 
 /// A function the caller runs when the model calls it.
 #[derive(Debug, Clone, PartialEq)]
@@ -191,19 +191,19 @@ impl Serialize for Tool {
 /// is declared.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AllowedTools {
-    mode: ToolChoiceMode,
+    mode: AllowedToolsMode,
     tools: Vec<String>,
 }
 
 impl AllowedTools {
     /// A restriction whose names the caller vouches for, as for an MCP server's
     /// own tools, which the crate cannot see.
-    pub fn unchecked(mode: ToolChoiceMode, tools: Vec<String>) -> Self {
+    pub fn unchecked(mode: AllowedToolsMode, tools: Vec<String>) -> Self {
         Self { mode, tools }
     }
 
     /// The mode inside the restriction.
-    pub fn mode(&self) -> ToolChoiceMode {
+    pub fn mode(&self) -> AllowedToolsMode {
         self.mode
     }
 

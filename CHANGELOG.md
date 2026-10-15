@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.3.0 — 2026-10-15
+
+A restriction to named tools can no longer be written in a mode the API
+refuses.
+
+### Breaking: `allowed_tools` takes an `AllowedToolsMode`
+
+The API answers a restriction in `auto` or `none` mode with "allowed_tools
+mode must be either ANY or VALIDATED" (measured on Gemini 3.8 Flash and
+Gemini 4 Argon). `Conversation::allow_tools`, `AllowedTools::unchecked` and
+`AllowedTools::mode` now take or return `AllowedToolsMode`, which has only
+`Any` and `Validated`. `ToolChoiceMode` still says the mode of a choice that
+names no tools.
+
+**Migration.** Pass `AllowedToolsMode::Any` for `ToolChoiceMode::Any`, and
+`AllowedToolsMode::Validated` where `ToolChoiceMode::Auto` meant "the model
+decides, among these tools".
+
 ## 0.2.1 — 2026-10-15
 
 - `Gemini4Argon`, with its three thinking levels (`low`, `medium` by default,

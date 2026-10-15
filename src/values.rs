@@ -141,6 +141,27 @@ api_enum! { closed
 }
 
 api_enum! { closed
+    /// How the model may use the tools a restriction names.
+    ///
+    /// Only these two: the API answers a restriction in `auto` or `none` mode
+    /// with "allowed_tools mode must be either ANY or VALIDATED" (measured
+    /// 2026-10-15 on Gemini 3.8 Flash and Gemini 4 Argon), so neither is a
+    /// value this type has.
+    ///
+    /// ```compile_fail
+    /// let _ = google::AllowedToolsMode::Auto;
+    /// ```
+    AllowedToolsMode {
+        /// The model must call at least one of the named tools.
+        Any => "any",
+        /// The model decides whether to call one of the named tools, and a
+        /// call it makes is checked against the declared schema before it is
+        /// returned.
+        Validated => "validated",
+    }
+}
+
+api_enum! { closed
     /// How finely the model tokenizes an image or video.
     MediaResolution {
         /// The fewest tokens.
