@@ -2,14 +2,14 @@
 
 use google::content::{Base64, FunctionOutput, Image, InputContent, ResultBlock, Source};
 use google::conversation::{Conversation, ConversationError};
-use google::model::{Gemini3_8Flash, OutputLimitExceeded, TextFormat};
+use google::model::{Gemini3_8Flash, Gemini4Argon, Gemini4ArgonThinking, OutputLimitExceeded, TextFormat};
 use google::request::{Request, RequestError};
 use google::settle::Settling;
 use google::stream::{Delta, StreamEvent};
 use google::tools::{Function, LatLng, Tool, ToolChoice};
 use google::turn::Turn;
 use google::usage::Usage;
-use google::{ImageMime, MediaResolution, SearchType, ServiceTier, ToolChoiceMode};
+use google::{ImageMime, MediaResolution, SearchType, ServiceTier, ThinkingSummaries, ToolChoiceMode};
 use serde_json::json;
 
 fn function(name: &str) -> Tool {
@@ -93,6 +93,38 @@ fn the_output_cap_is_checked_against_the_model() {
     );
     assert!(Gemini3_8Flash::new().with_max_output_tokens(0).is_err());
     assert_eq!(Gemini3_8Flash::new().with_max_output_tokens(65_536).unwrap().max_output_tokens(), Some(65_536));
+}
+
+#[test]
+fn gemini_4_argon_names_itself_and_its_thinking() {
+    let mut conversation = Conversation::new(None, vec![]).unwrap();
+    conversation.push_user_text("hi").unwrap();
+    let model = Gemini4Argon::new().with_thinking(Gemini4ArgonThinking::High).with_summaries(ThinkingSummaries::Auto);
+    let body = serde_json::to_value(Request::new(&conversation, model).unwrap()).unwrap();
+    assert_eq!(body["model"], "gemini-4-argon");
+    assert_eq!(body["generation_config"], json!({"thinking_level": "high", "thinking_summaries": "auto"}));
+    let default = serde_json::to_value(Request::new(&conversation, Gemini4Argon::new()).unwrap()).unwrap();
+    assert_eq!(default["generation_config"]["thinking_level"], "medium");
+}
+
+/// One streamed response outputs at most 64K tokens and an unstreamed one
+/// 32K, as the API answered on 2026-10-15.
+#[test]
+fn gemini_4_argon_caps_output_by_whether_it_streams() {
+    assert_eq!(
+        Gemini4Argon::new().with_max_output_tokens(65_537).unwrap_err(),
+        OutputLimitExceeded { requested: 65_537, limit: 65_536 }
+    );
+    let mut conversation = Conversation::new(None, vec![]).unwrap();
+    conversation.push_user_text("hi").unwrap();
+    let streamed_cap = Gemini4Argon::new().with_max_output_tokens(65_536).unwrap();
+    let streamed = Request::new(&conversation, streamed_cap.clone()).unwrap().streaming();
+    assert_eq!(serde_json::to_value(&streamed).unwrap()["generation_config"]["max_output_tokens"], 65_536);
+    let unary = Request::new(&conversation, streamed_cap).unwrap();
+    let refused = serde_json::to_value(&unary).unwrap_err().to_string();
+    assert!(refused.contains("outside 1..=32768"), "{refused}");
+    let unary_cap = Gemini4Argon::new().with_max_output_tokens(32_768).unwrap();
+    assert!(serde_json::to_value(Request::new(&conversation, unary_cap).unwrap()).is_ok());
 }
 
 #[test]

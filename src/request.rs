@@ -9,7 +9,7 @@
 //! interaction continued with `previous_interaction_id` hands the prefix to
 //! the server, where no type can guard it, so neither field exists here.
 
-use serde::ser::SerializeMap;
+use serde::ser::{Error as _, SerializeMap};
 use serde::{Serialize, Serializer};
 
 use crate::conversation::Conversation;
@@ -114,6 +114,14 @@ impl Serialize for GenerationConfig<'_, '_> {
 
 impl Serialize for Request<'_> {
     fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        // The cap a model allows depends on whether the response streams,
+        // which is only settled here, so a cap the unary call refuses is
+        // refused as the body is written.
+        if !self.stream
+            && let Some(exceeded) = self.model.unary_cap_exceeded()
+        {
+            return Err(S::Error::custom(format!("{exceeded} unless the request is streamed")));
+        }
         let conversation = self.conversation;
         let mut map = s.serialize_map(None)?;
         map.serialize_entry("model", self.model.id())?;

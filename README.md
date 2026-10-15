@@ -8,8 +8,10 @@ or buffered. It has no HTTP client: bring your own.
 
 What the types rule out:
 
-- **Parameters a model refuses.** Each model is its own type. Gemini 3.8 Flash
-  has no `minimal` thinking level, because the API answers it with a 400.
+- **Parameters a model refuses.** Each model is its own type: Gemini 3.8 Flash
+  and Gemini 4 Argon. Neither has a `minimal` thinking level, because the API
+  answers it with a 400, and Gemini 4 Argon's output cap is checked against
+  what one response may stream, 64K tokens, or return unstreamed, 32K.
 - **Broken replay.** In stateless use, the model's steps must go back exactly as
   received, thought signatures included. A model step keeps its received JSON,
   and it has no public constructor.

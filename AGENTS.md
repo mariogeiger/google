@@ -44,7 +44,9 @@ capture it.
 
 ## The remaining gap, in priority order
 
-1. **More models.** Only Gemini 3.8 Flash has a type. Gemini 3.1 Pro Preview
+1. **More models.** Gemini 3.8 Flash and Gemini 4 Argon have a type. Gemini
+   4 Argon's long decode, past 64K output tokens, needs `background`, which
+   waits with agents below. Gemini 3.1 Pro Preview
    (`low`, `medium`, `high`; default `high`) and the 3.5–3.7 Flash models
    (which accept `minimal`) are next, each its own type with its own limits.
 2. **Thought summaries, captured.** Every request with `thinking_summaries:

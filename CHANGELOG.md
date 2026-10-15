@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.1 — 2026-10-15
+
+- `Gemini4Argon`, with its three thinking levels (`low`, `medium` by default,
+  `high`; `minimal` is refused by the API and absent from the type), thought
+  summaries, a response format, and an output cap of at most 65,536 tokens.
+  A request that is not streamed refuses, as its body is written, a cap above
+  the 32,768 tokens the API allows one unstreamed response.
+
 ## 0.2.0 — 2026-09-24
 
 A consumer that stores conversations can now replay them.

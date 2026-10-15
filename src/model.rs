@@ -6,8 +6,10 @@
 //! not a field of it. Adding a model means adding a type, never widening one.
 
 mod gemini_3_8_flash;
+mod gemini_4_argon;
 
 pub use gemini_3_8_flash::{Gemini3_8Flash, Gemini3_8FlashThinking};
+pub use gemini_4_argon::{Gemini4Argon, Gemini4ArgonThinking};
 
 use serde::ser::SerializeMap;
 use serde::{Serialize, Serializer};
@@ -60,6 +62,8 @@ impl Serialize for TextFormat {
 pub enum Model {
     /// Gemini 3.8 Flash.
     Gemini3_8Flash(Gemini3_8Flash),
+    /// Gemini 4 Argon.
+    Gemini4Argon(Gemini4Argon),
 }
 
 impl Model {
@@ -68,22 +72,42 @@ impl Model {
         Model::Gemini3_8Flash(Gemini3_8Flash::new())
     }
 
+    /// Gemini 4 Argon with its documented defaults.
+    pub fn gemini_4_argon() -> Self {
+        Model::Gemini4Argon(Gemini4Argon::new())
+    }
+
     /// The model id sent as `model`.
     pub fn id(&self) -> &'static str {
         match self {
             Model::Gemini3_8Flash(_) => Gemini3_8Flash::ID,
+            Model::Gemini4Argon(_) => Gemini4Argon::ID,
         }
     }
 
     pub(crate) fn write_generation_config<M: SerializeMap>(&self, map: &mut M) -> Result<(), M::Error> {
         match self {
             Model::Gemini3_8Flash(m) => m.write_generation_config(map),
+            Model::Gemini4Argon(m) => m.write_generation_config(map),
         }
     }
 
     pub(crate) fn response_format(&self) -> Option<&TextFormat> {
         match self {
             Model::Gemini3_8Flash(m) => m.response_format.as_ref(),
+            Model::Gemini4Argon(m) => m.response_format.as_ref(),
+        }
+    }
+
+    /// A cap above what one response that is not streamed may output, if the
+    /// cap set is one: with the limit it exceeds.
+    pub(crate) fn unary_cap_exceeded(&self) -> Option<OutputLimitExceeded> {
+        match self {
+            Model::Gemini3_8Flash(_) => None,
+            Model::Gemini4Argon(m) => m
+                .max_output_tokens()
+                .filter(|&tokens| tokens > Gemini4Argon::UNARY_OUTPUT_TOKEN_LIMIT)
+                .map(|requested| OutputLimitExceeded { requested, limit: Gemini4Argon::UNARY_OUTPUT_TOKEN_LIMIT }),
         }
     }
 }
@@ -91,5 +115,11 @@ impl Model {
 impl From<Gemini3_8Flash> for Model {
     fn from(m: Gemini3_8Flash) -> Self {
         Model::Gemini3_8Flash(m)
+    }
+}
+
+impl From<Gemini4Argon> for Model {
+    fn from(m: Gemini4Argon) -> Self {
+        Model::Gemini4Argon(m)
     }
 }
