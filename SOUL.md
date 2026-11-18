@@ -24,8 +24,8 @@ that cannot be written.
 reference — the OpenAPI document at
 `https://ai.google.dev/static/api/interactions.openapi.json` and the guides —
 is the specification. A 200 is not evidence of legality: the endpoint accepted
-a function result with an unknown `call_id`, and a `temperature` the reference
-does not have. A 400 *is* evidence, so live probes are for measuring what the
+a function result with an unknown `call_id`, and a `temperature` while the
+reference had none (it lists it now, deprecated). A 400 *is* evidence, so live probes are for measuring what the
 API rejects.
 
 ## Stateless, by decision

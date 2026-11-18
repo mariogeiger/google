@@ -1,5 +1,49 @@
 # Changelog
 
+## 0.4.0 — 2026-11-18
+
+An interaction that stops at one request's output cap is no longer read as a
+finished answer.
+
+### Breaking: `requires_continuation` is a status, and not a final one
+
+The reference lists the status `requires_continuation`: a request reached the
+output cap its model allows a single request, with more of `max_output_tokens`
+still to spend, and the rest of the answer comes from a further request that
+carries the `continuation_token` of this one. It decoded as
+`Status::Unrecognized`, which counts as final, so half an answer settled into a
+turn. `KnownStatus::RequiresContinuation` names it, `Status::is_final` says
+which statuses end a turn, and both `Settling::settle` and `decode_interaction`
+refuse the others with `NotFinal`. The token itself is not modelled yet; the
+long decode it serves is the second gap in `AGENTS.md`.
+
+**Migration.** A `match` on `KnownStatus` needs an arm for
+`RequiresContinuation`, and one on `ThinkingLevel` an arm for `Xhigh` (below).
+A caller that read the turn of an interaction with that status now gets the
+`NotFinal` error instead.
+
+### Also
+
+- `ThinkingLevel::Xhigh`, the fifth value of the reference's vocabulary.
+  Neither Gemini 3.8 Flash nor Gemini 4 Argon accepts it, nor `minimal`: the
+  API answers each with a 400 (measured 2026-11-18, through a gateway), so
+  their types have neither, and `compile_fail` doctests say so.
+- Gemini 4 Argon's output limits, re-measured 2026-11-18. The refusal "Long
+  decodes are not supported using the Interactions API" is gone: the API now
+  accepts a cap up to 1,048,576, streamed or not, which Google's long-decode
+  guide serves with continuation requests. The 65,536 streamed and 32,768
+  unstreamed limits stay as what one request returns whole, until the
+  continuation is modelled. Gemini 3.8 Flash's 65,536 still holds, streamed or
+  not (a cap of 65,537 is refused in both).
+- The live tests are one module per modelled model, and can run against a
+  gateway that speaks the same API (`GEMINI_API_BASE`, `GEMINI_MODEL_PREFIX`).
+  Each model's module checks a function round trip that replays its thought, a
+  buffered text, a streamed thought summary, and that the API still refuses the
+  thinking levels its type lacks. All passed 2026-11-18 on Gemini 3.8 Flash and
+  Gemini 4 Argon.
+- Thought summaries confirmed on a live stream of both: one `thought_summary`
+  delta per block, which settles into the thought that precedes the answer.
+
 ## 0.3.0 — 2026-10-15
 
 A restriction to named tools can no longer be written in a mode the API

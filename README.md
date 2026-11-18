@@ -9,9 +9,10 @@ or buffered. It has no HTTP client: bring your own.
 What the types rule out:
 
 - **Parameters a model refuses.** Each model is its own type: Gemini 3.8 Flash
-  and Gemini 4 Argon. Neither has a `minimal` thinking level, because the API
-  answers it with a 400, and Gemini 4 Argon's output cap is checked against
-  what one response may stream, 64K tokens, or return unstreamed, 32K.
+  and Gemini 4 Argon. Neither has a `minimal` or `xhigh` thinking level,
+  because the API answers each with a 400, and Gemini 4 Argon's output cap is
+  checked against what one request may stream, 64K tokens, or return
+  unstreamed, 32K.
 - **Broken replay.** In stateless use, the model's steps must go back exactly as
   received, thought signatures included. A model step keeps its received JSON,
   and it has no public constructor.
@@ -19,8 +20,9 @@ What the types rule out:
   from the call it answers. A new message waits until every call has a result.
 - **Cache drift.** The system instruction and tools are fixed. History is
   append-only. Tool choice is per call.
-- **Half answers.** A stream that ends before `interaction.completed` does not
-  settle into a turn.
+- **Half answers.** A stream that ends before `interaction.completed`, and an
+  interaction that stops at one request's output cap with
+  `requires_continuation`, do not become a turn.
 
 ```rust
 use google::conversation::Conversation;

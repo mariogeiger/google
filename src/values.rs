@@ -96,6 +96,8 @@ api_enum! { closed
         Medium => "medium",
         /// High thinking.
         High => "high",
+        /// Extra high thinking, above `high`.
+        Xhigh => "xhigh",
     }
 }
 
@@ -326,8 +328,8 @@ api_enum! { closed
 api_enum! { open
     /// Where an interaction stands.
     ///
-    /// Only some are terminal; which ones end a stream is decided in
-    /// [`crate::settle`], not here.
+    /// Only some are final, as [`Status::is_final`] says; a stream that
+    /// completes in one that is not fails in [`crate::settle`].
     Status / KnownStatus {
         /// Still running.
         InProgress => "in_progress",
@@ -345,6 +347,27 @@ api_enum! { open
         BudgetExceeded => "budget_exceeded",
         /// Waiting to start, for background interactions.
         Queued => "queued",
+        /// One request reached the output cap its model allows a single
+        /// request, with more of `max_output_tokens` still to spend. The rest
+        /// of the answer comes from sending the request again with the
+        /// `continuation_token` this response carries, which this crate does
+        /// not model yet: so it is not a finished turn.
+        RequiresContinuation => "requires_continuation",
+    }
+}
+
+impl Status {
+    /// Whether an interaction in this status is a whole turn: not running, not
+    /// waiting to start, and not stopped at one request's output cap with the
+    /// rest of its answer still to come.
+    ///
+    /// A status newer than this crate counts as final, as the stream it ends
+    /// has already completed.
+    pub fn is_final(&self) -> bool {
+        !matches!(
+            self,
+            Status::Known(KnownStatus::InProgress | KnownStatus::Queued | KnownStatus::RequiresContinuation)
+        )
     }
 }
 

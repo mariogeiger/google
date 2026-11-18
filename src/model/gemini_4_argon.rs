@@ -8,12 +8,17 @@ use crate::values::{ThinkingLevel, ThinkingSummaries, api_enum};
 api_enum! { closed
     /// The thinking levels Gemini 4 Argon accepts.
     ///
-    /// `minimal` is not one of them: the API answers it with "Thinking level
-    /// is unsupported: THINKING_LEVEL_MINIMAL" (measured 2026-10-15), so it is
-    /// not a value this type has.
+    /// `minimal` and `xhigh` are not among them: the API answers each with
+    /// "Thinking level is unsupported: THINKING_LEVEL_MINIMAL" (measured
+    /// 2026-10-15 and again 2026-11-18) and "…THINKING_LEVEL_XHIGH" (measured
+    /// 2026-11-18), so neither is a value this type has.
     ///
     /// ```compile_fail
     /// let _ = google::model::Gemini4ArgonThinking::Minimal;
+    /// ```
+    ///
+    /// ```compile_fail
+    /// let _ = google::model::Gemini4ArgonThinking::Xhigh;
     /// ```
     Gemini4ArgonThinking {
         /// Low thinking.
@@ -42,9 +47,13 @@ impl From<Gemini4ArgonThinking> for ThinkingLevel {
 /// configuration. Thinking is always on. Input, thinking and output share one
 /// window of [`Self::INPUT_TOKEN_LIMIT`] tokens.
 ///
-/// Its long decode, past 64K output tokens, needs background execution, which
-/// this stateless crate does not send; so its output cap stops at the 64K one
-/// response may stream.
+/// Its long decode, past what one request returns, goes on in further
+/// requests that resume from a `continuation_token`, or in a background
+/// interaction; this crate models neither yet, so its output cap stops at
+/// what one streamed request returns. A request that is not streamed and sets
+/// no cap may still reach the lower limit of a request that is not streamed;
+/// the API then ends it with `requires_continuation`, which decoding refuses as
+/// not final rather than reading half an answer as a whole one.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Gemini4Argon {
     /// How much it thinks. Always emitted, so the body records it.
@@ -72,13 +81,18 @@ impl Gemini4Argon {
     pub const ID: &'static str = "gemini-4-argon";
     /// The one window input, thinking and output share.
     pub const INPUT_TOKEN_LIMIT: u32 = 1_048_576;
-    /// The most tokens one streamed response can output, thinking included:
-    /// the API answers more with "Long decodes are not supported using the
-    /// Interactions API" (measured 2026-10-15).
+    /// The most tokens one streamed request can output, thinking included, and
+    /// the output limit Google documents for the model. On 2026-10-15 the API
+    /// answered a larger cap with "Long decodes are not supported using the
+    /// Interactions API"; on 2026-11-18 it accepts one up to 1,048,576 (the
+    /// window), and Google's long-decode guide has a request that reaches this
+    /// limit with budget left end in `requires_continuation`.
     pub const OUTPUT_TOKEN_LIMIT: u32 = 65_536;
-    /// The most tokens one response that is not streamed can output, thinking
-    /// included: the API answers 32,769 with the same refusal (measured
-    /// 2026-10-15).
+    /// The most tokens one request that is not streamed can output, thinking
+    /// included: Google's long-decode guide documents it as the limit of a
+    /// request that is not streamed on this model, and the API answered a cap
+    /// of 32,769 with the same refusal on 2026-10-15 and with a 200 on
+    /// 2026-11-18.
     pub const UNARY_OUTPUT_TOKEN_LIMIT: u32 = 32_768;
 
     /// The documented defaults: medium thinking, no summaries, no output cap.

@@ -21,7 +21,6 @@ use crate::step::{ModelStep, StepError};
 use crate::stream::{Delta, Snapshot, StreamEvent};
 use crate::turn::Turn;
 use crate::usage::Usage;
-use crate::values::KnownStatus;
 
 /// Why a stream did not become a turn.
 #[derive(Debug, Clone, PartialEq)]
@@ -196,9 +195,8 @@ impl Settling {
                 }
             }
             StreamEvent::Completed(snapshot) => {
-                let status = &snapshot.status;
-                if *status == KnownStatus::InProgress || *status == KnownStatus::Queued {
-                    return Err(SettleError::NotFinal(status.as_str().to_owned()));
+                if !snapshot.status.is_final() {
+                    return Err(SettleError::NotFinal(snapshot.status.as_str().to_owned()));
                 }
                 if let Some(usage) = &snapshot.usage {
                     self.usage.join(usage);

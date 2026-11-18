@@ -6,7 +6,7 @@ use serde_json::{Map, Value};
 use crate::step::{ModelStep, StepError};
 use crate::turn::Turn;
 use crate::usage::Usage;
-use crate::values::{KnownStatus, Status};
+use crate::values::Status;
 
 /// Why a buffered body did not become a turn.
 #[derive(Debug, Clone, PartialEq)]
@@ -47,7 +47,7 @@ struct Wire {
 /// Decode the body of a successful buffered request.
 pub fn decode_interaction(body: &str) -> Result<Turn, ResponseError> {
     let wire: Wire = serde_json::from_str(body).map_err(|e| ResponseError::Body(e.to_string()))?;
-    if wire.status == KnownStatus::InProgress || wire.status == KnownStatus::Queued {
+    if !wire.status.is_final() {
         return Err(ResponseError::NotFinal(wire.status.as_str().to_owned()));
     }
     let steps =

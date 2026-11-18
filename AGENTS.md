@@ -35,6 +35,10 @@ capture it.
 
 - Never print, log, or commit a credential. The live tests read the key from
   the file `GEMINI_API_KEY_FILE` names, or a git-ignored `.key`.
+- The live tests are one module per modelled model; run one by its name. To
+  run them against a gateway that speaks the same API, set `GEMINI_API_BASE` to
+  its origin and `GEMINI_MODEL_PREFIX` to what its model ids begin with. Name
+  neither in the repository.
 - The free tier allows 20 requests a day per model and 5 a minute. Capture
   once, save the body under `tests/captured/` next to the request that made
   it, and test against the saved bytes. Never edit a captured file.
@@ -45,26 +49,38 @@ capture it.
 ## The remaining gap, in priority order
 
 1. **More models.** Gemini 3.8 Flash and Gemini 4 Argon have a type. Gemini
-   4 Argon's long decode, past 64K output tokens, needs `background`, which
-   waits with agents below. Gemini 3.1 Pro Preview
-   (`low`, `medium`, `high`; default `high`) and the 3.5–3.7 Flash models
-   (which accept `minimal`) are next, each its own type with its own limits.
-2. **Thought summaries, captured.** Every request with `thinking_summaries:
-   auto` and high thinking got a 503 on 2026-09-24. The settle rule — each
-   `thought_summary` delta appends one block — follows the reference and is
-   not yet confirmed against a capture.
-3. **Server-side tool steps, typed.** They decode and replay verbatim, but
+   3.1 Pro Preview (`low`, `medium`, `high`; default `high`), the 3.5–3.7
+   Flash models (which accept `minimal`), and Gemini 4 Hydrogen and Carbon
+   (listed by Google's own API on 2026-11-18, and refused by the gateway
+   measured through; Hydrogen answered on the free tier, Carbon and Argon
+   not) are next, each its own type with its own measured limits.
+2. **Long decode.** Past what one request returns (64K tokens streamed, 32K
+   not streamed on Gemini 4 Argon), the API ends a request with status
+   `requires_continuation` and a `continuation_token`; the next request
+   resends the same conversation with that token, stateless as it is. Decoding
+   already refuses such a request as not final. Model the token on both sides
+   and how the hops' steps join, and capture a real hop (it takes tens of
+   thousands of generated tokens, and a request that is not streamed ran into
+   a gateway's five-minute timeout on 2026-11-18). Raise the output caps then,
+   not before.
+3. **Thought summaries, captured.** Every request with `thinking_summaries:
+   auto` and high thinking got a 503 on 2026-09-24, and again twice on
+   2026-11-18. The settle rule — each `thought_summary` delta appends one
+   block — is confirmed on a live stream of Gemini 3.8 Flash and of Gemini 4
+   Argon through a gateway (one block per thought, in `streamed_thought_summary`),
+   not yet captured from Google's own endpoint.
+4. **Server-side tool steps, typed.** They decode and replay verbatim, but
    their views are only a step type. Model the call arguments and results of
    Google Search, URL context, code execution, Maps, file search and MCP, and
    capture each (Google Search returned `quota_exceeded` on the free tier).
-4. **`safety_settings`.** The OpenAPI document references a `SafetySetting`
+5. **`safety_settings`.** The OpenAPI document references a `SafetySetting`
    schema it does not define. Model it once the reference does.
-5. **`labels`**, with the Cloud label rules on keys and values.
-6. **Output modalities other than text**: image, audio, video and speech
+6. **`labels`**, with the Cloud label rules on keys and values.
+7. **Output modalities other than text**: image, audio, video and speech
    configuration and response formats, on the models that produce them.
-7. **Video processing segments**: the object form of `processing` with start
+8. **Video processing segments**: the object form of `processing` with start
    and end offsets.
-8. **Agents** (`agent`, `agent_config`, `environment`) and `webhook_config`.
+9. **Agents** (`agent`, `agent_config`, `environment`) and `webhook_config`.
    Agents need `background`, which needs storage, so they wait on a decision
    to change `SOUL.md`.
 

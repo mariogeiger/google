@@ -8,12 +8,17 @@ use crate::values::{ThinkingLevel, ThinkingSummaries, api_enum};
 api_enum! { closed
     /// The thinking levels Gemini 3.8 Flash accepts.
     ///
-    /// `minimal` is not one of them: the API answers it with "'minimal' is not
-    /// a supported thinking level for this model" (measured 2026-09-24), so it
-    /// is not a value this type has.
+    /// `minimal` and `xhigh` are not among them: the API answers `minimal` with
+    /// "'minimal' is not a supported thinking level for this model" (measured
+    /// 2026-09-24) and each with "Thinking level is unsupported" (measured
+    /// 2026-11-18), so neither is a value this type has.
     ///
     /// ```compile_fail
     /// let _ = google::model::Gemini3_8FlashThinking::Minimal;
+    /// ```
+    ///
+    /// ```compile_fail
+    /// let _ = google::model::Gemini3_8FlashThinking::Xhigh;
     /// ```
     Gemini3_8FlashThinking {
         /// Low thinking.
@@ -67,7 +72,8 @@ impl Gemini3_8Flash {
     pub const ID: &'static str = "gemini-3.8-flash";
     /// The most input tokens it accepts.
     pub const INPUT_TOKEN_LIMIT: u32 = 1_048_576;
-    /// The most tokens it can output, thinking included.
+    /// The most tokens it can output, thinking included, streamed or not: the
+    /// API refuses a cap of 65,537 in both (measured 2026-11-18).
     pub const OUTPUT_TOKEN_LIMIT: u32 = 65_536;
 
     /// The documented defaults: medium thinking, no summaries, no output cap.
